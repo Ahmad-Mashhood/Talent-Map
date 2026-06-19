@@ -29,6 +29,8 @@ const roleLabels = {
   super_admin: "Super Admin"
 };
 
+const API_BASE = import.meta.env.VITE_API_URL || "";
+
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token") || "");
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("user") || "null"));
@@ -41,7 +43,7 @@ function App() {
   async function request(path, options = {}) {
     const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
     if (token) headers.Authorization = `Bearer ${token}`;
-    const response = await fetch(path, { ...options, headers });
+    const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
     if (response.headers.get("content-type")?.includes("application/pdf")) return response;
     const body = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(body.error || "Something went wrong.");
@@ -320,7 +322,7 @@ function AuthScreen({ saveSession, request }) {
     setError("");
     const values = Object.fromEntries(new FormData(event.currentTarget));
     try {
-      const response = await fetch(`/api/auth/${mode}`, {
+      const response = await fetch(`${API_BASE}/api/auth/${mode}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values)
@@ -1369,7 +1371,7 @@ function AnalyticsPanel({ request, token, triggerError }) {
 
   async function handleDownloadPDF() {
     try {
-      const response = await fetch("/api/admin/reports/pdf", {
+      const response = await fetch(`${API_BASE}/api/admin/reports/pdf`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
